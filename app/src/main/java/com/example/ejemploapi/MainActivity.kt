@@ -19,11 +19,12 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 class MainActivity : ComponentActivity() {
 
-    private lateinit var retrofit: Retrofit
+    private lateinit var retrofit: Retrofit// Declaración de Retrofit como propiedad de clase
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Inicializa Retrofit con la URL base de la PokeAPI y el convertidor Gson
         retrofit = Retrofit.Builder()
             .baseUrl("https://pokeapi.co/api/v2/")
             .addConverterFactory(GsonConverterFactory.create())
@@ -44,31 +45,47 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun PokemonListScreen(retrofit: Retrofit, modifier: Modifier = Modifier) {
-        val pokemons = remember { mutableStateListOf<Pokemon>() }
+        val pokemons = remember { mutableStateListOf<Pokemon>() }// Lista mutable que se actualiza con los Pokémon obtenidos
 
         LaunchedEffect(Unit) {
-            withContext(Dispatchers.IO) {
+            withContext(Dispatchers.IO) {// Ejecuta la llamada a la API en un hilo de fondo (IO)
                 val call = retrofit.create(PokeAPI::class.java).getPokemons().execute()
                 val response = call.body()
                 if (call.isSuccessful && response != null) {
+                    // Limpia y actualiza la lista con los resultados obtenidos
                     pokemons.clear()
                     pokemons.addAll(response.results)
                 }
             }
         }
 
+        // Lista vertical que muestra los Pokémon en pares
         LazyColumn(modifier = modifier.padding(16.dp)) {
-            items(pokemons) { pokemon ->
-                Text(
-                    text = pokemon.getNombre(),
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp)
-                )
+            // Divide la lista en grupos de 2 elementos
+            items(pokemons.chunked(2)) { parPokemon ->
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    // Itera sobre cada Pokémon del par y lo muestra en una columna
+                    parPokemon.forEach { pokemon ->
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)// Ocupa mitad de la fila
+                                .padding(8.dp)
+                        ) {
+                            Text(
+                                text = pokemon.getNombre(),// Muestra el nombre del Pokémon
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        }
+                    }
+                    // Si el par tiene solo un elemento, añade espacio para alinear
+                    if (parPokemon.size == 1) {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
+                }
             }
         }
     }
+
 
     @Preview(showBackground = true)
     @Composable
