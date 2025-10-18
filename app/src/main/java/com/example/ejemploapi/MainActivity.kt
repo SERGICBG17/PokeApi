@@ -71,10 +71,13 @@ class MainActivity : ComponentActivity() {
                                 .weight(1f)// Ocupa mitad de la fila
                                 .padding(8.dp)
                         ) {
-                            Text(
-                                text = pokemon.getNombre(),// Muestra el nombre del Pokémon
-                                style = MaterialTheme.typography.bodyLarge
-                            )
+                            Button(
+                                onClick = { /* Acción al hacer clic */ }
+                            ) {
+                                Text(
+                                    text = pokemon.getNombre(),// Muestra el nombre del Pokémon
+                                )
+                            }
                         }
                     }
                     // Si el par tiene solo un elemento, añade espacio para alinear
