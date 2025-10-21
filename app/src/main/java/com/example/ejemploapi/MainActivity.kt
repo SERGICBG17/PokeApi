@@ -1,104 +1,108 @@
 package com.example.ejemploapi
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.ejemploapi.ui.theme.EjemploApiTheme
-import kotlinx.coroutines.*
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 
 class MainActivity : ComponentActivity() {
-
-    private lateinit var retrofit: Retrofit// Declaración de Retrofit como propiedad de clase
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // Inicializa Retrofit con la URL base de la PokeAPI y el convertidor Gson
-        retrofit = Retrofit.Builder()
-            .baseUrl("https://pokeapi.co/api/v2/")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-
         enableEdgeToEdge()
         setContent {
             EjemploApiTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    PokemonListScreen(
-                        retrofit = retrofit,
+                    Greeting(
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
             }
         }
     }
+}
 
-    @Composable
-    fun PokemonListScreen(retrofit: Retrofit, modifier: Modifier = Modifier) {
-        val pokemons = remember { mutableStateListOf<Pokemon>() }// Lista mutable que se actualiza con los Pokémon obtenidos
+@Composable
+fun Greeting(modifier: Modifier = Modifier) {
 
-        LaunchedEffect(Unit) {
-            withContext(Dispatchers.IO) {// Ejecuta la llamada a la API en un hilo de fondo (IO)
-                val call = retrofit.create(PokeAPI::class.java).getPokemons().execute()
-                val response = call.body()
-                if (call.isSuccessful && response != null) {
-                    // Limpia y actualiza la lista con los resultados obtenidos
-                    pokemons.clear()
-                    pokemons.addAll(response.results)
-                }
-            }
-        }
+    var contexto = LocalContext.current
+    var intentRegistro = Intent(contexto, Registro::class.java)
+    var intentInicio = Intent(contexto, LoginFirebase::class.java)
 
-        // Lista vertical que muestra los Pokémon en pares
-        LazyColumn(modifier = modifier.padding(16.dp)) {
-            // Divide la lista en grupos de 2 elementos
-            items(pokemons.chunked(2)) { parPokemon ->
-                Row(modifier = Modifier.fillMaxWidth()) {
-                    // Itera sobre cada Pokémon del par y lo muestra en una columna
-                    parPokemon.forEach { pokemon ->
-                        Column(
-                            modifier = Modifier
-                                .weight(1f)// Ocupa mitad de la fila
-                                .padding(8.dp)
-                        ) {
-                            Button(
-                                onClick = { /* Acción al hacer clic */ }
-                            ) {
-                                Text(
-                                    text = pokemon.getNombre(),// Muestra el nombre del Pokémon
-                                )
-                            }
-                        }
-                    }
-                    // Si el par tiene solo un elemento, añade espacio para alinear
-                    if (parPokemon.size == 1) {
-                        Spacer(modifier = Modifier.weight(1f))
-                    }
-                }
-            }
-        }
-    }
+    // Contenedor visual con fondo gris claro
 
+    Surface(modifier = modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()           // Ocupa toda la pantalla
+                .padding(32.dp),         // Margen interno de 32dp
+            horizontalAlignment = Alignment.CenterHorizontally, // Centra los elementos horizontalmente
+            verticalArrangement = Arrangement.Top               // Alinea los elementos desde arriba
+        ) {
 
-    @Preview(showBackground = true)
-    @Composable
-    fun PreviewPokemonList() {
-        EjemploApiTheme {
-            PokemonListScreen(retrofit = Retrofit.Builder()
-                .baseUrl("https://pokeapi.co/api/v2/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build()
+            Spacer(modifier = Modifier.height(40.dp))
+
+            Image(
+                painter = painterResource(id = R.drawable.logo3),
+                contentDescription = "Logo",
+                modifier = Modifier.height(200.dp)
             )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "Bienvenido a la PokeApi" +
+                        "\n   inicia sesión o registrate",
+                modifier = modifier
+            )
+
+            Spacer(modifier = Modifier.height(40.dp))
+
+            Button(
+                onClick = {
+                    contexto.startActivity(intentInicio)
+                }
+            ) {
+                Text(text = "Iniciar sesión")
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "¿No tienes cuenta? Regístrate abajo.",
+                color = Color.Gray
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+
+            Button(
+                onClick = {
+                    contexto.startActivity(intentRegistro)
+                }
+            ) {
+                Text(text = "Registrarse")
+            }
+
         }
     }
 }
+
+//@Preview(showBackground = true)
+//@Composable
+//fun GreetingPreview() {
+//    EjemploApiTheme {
+//    }
+//}

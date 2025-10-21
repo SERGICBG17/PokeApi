@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">EjemploApi</string>
+    <string name="title_activity_datos_del_pokemon">DatosDelPokemon</string>
+    <string name="title_activity_formulario_login">FormularioLogin</string>
+    <string name="title_activity_login_firebase">LoginFirebase</string>
+    <string name="title_activity_registro">Registro</string>
+    <string name="title_activity_principal">Principal</string>
 </resources>
