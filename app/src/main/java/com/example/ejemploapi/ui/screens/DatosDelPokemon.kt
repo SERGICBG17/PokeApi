@@ -1,4 +1,4 @@
-package com.example.ejemploapi
+package com.example.ejemploapi.ui.screens
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity

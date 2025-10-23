@@ -1,4 +1,4 @@
-package com.example.ejemploapi
+package com.example.ejemploapi.ui.screens
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -12,6 +12,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.ejemploapi.data.model.Pokemon
+import com.example.ejemploapi.data.network.PokeAPI
 import com.example.ejemploapi.ui.theme.EjemploApiTheme
 import kotlinx.coroutines.*
 import retrofit2.Retrofit

@@ -1,4 +1,4 @@
-package com.example.ejemploapi
+package com.example.ejemploapi.data.model
 
 class Pokemon {
     private lateinit var name: String

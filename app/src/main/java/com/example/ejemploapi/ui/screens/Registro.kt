@@ -1,4 +1,4 @@
-package com.example.ejemploapi
+package com.example.ejemploapi.ui.screens
 
 import android.content.Intent
 import android.os.Bundle
