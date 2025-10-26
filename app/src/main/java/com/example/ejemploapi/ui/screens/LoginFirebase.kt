@@ -1,106 +1,110 @@
 package com.example.ejemploapi.ui.screens
 
-import android.content.Intent
-import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.ejemploapi.ui.theme.EjemploApiTheme
+import com.example.ejemploapi.R
+import com.example.ejemploapi.ui.viewModels.LoginViewModel
 import com.google.firebase.auth.FirebaseAuth
+@Composable
+fun LoginScreen(
+    onLoginSuccess: () -> Unit, // Se llama cuando el login es exitoso y el email está verificado
+    viewModel: LoginViewModel = LoginViewModel() // ViewModel que gestiona la lógica de login
+) {
+    val context = LocalContext.current
 
-class LoginFirebase : ComponentActivity() {
+    // Variables para guardar lo que escribe el usuario
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
 
-    private lateinit var firebaseAuth: FirebaseAuth
+    // Diseño de la pantalla
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        firebaseAuth = FirebaseAuth.getInstance()
+        // Título
+        Text(
+            text = "Inicio de Sesión",
+            style = MaterialTheme.typography.titleLarge,
+        )
 
-        enableEdgeToEdge()
-        setContent {
-            EjemploApiTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting2(modifier = Modifier.padding(innerPadding))
-                }
-            }
-        }
-    }
+        Spacer(modifier = Modifier.height(8.dp)) // Espacio entre campos
 
-    private fun login(email: String, password: String) {
-        if (email.isNotEmpty() && password.isNotEmpty()) {
-            firebaseAuth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this) { task ->
-                    if (task.isSuccessful) {
-                        val intent = Intent(this, LoginFirebase::class.java)
-                        startActivity(intent)
+        // Imagen del logo
+        Image(
+            painter = painterResource(id = R.drawable.logo3),
+            contentDescription = "Logo",
+            modifier = Modifier.height(200.dp)
+        )
+
+        Spacer(modifier = Modifier.height(8.dp)) // Espacio entre campos
+
+        // Campo de texto para el email
+        OutlinedTextField(
+            value = email,
+            onValueChange = { email = it },
+            label = { Text("Email") }
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Campo de texto para la contraseña
+        OutlinedTextField(
+            value = password,
+            onValueChange = { password = it },
+            label = { Text("Contraseña") },
+            visualTransformation = PasswordVisualTransformation() // Oculta los caracteres
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Botón para iniciar sesión
+        Button(onClick = {
+            // Llamamos al ViewModel para hacer login con email y contraseña
+            viewModel.login(email, password) { success, message ->
+                if (success) {
+                    // Si el login fue exitoso, comprobamos si el email está verificado
+                    val user = FirebaseAuth.getInstance().currentUser
+
+                    if (user != null && user.isEmailVerified) {
+                        // Si el email está verificado, dejamos entrar
+                        onLoginSuccess()
                     } else {
-                        Toast.makeText(this, "Email o contraseña inválidos", Toast.LENGTH_SHORT).show()
+                        // Si no está verificado, mostramos mensaje y cerramos sesión
+                        Toast.makeText(
+                            context,
+                            "Verifica tu email antes de iniciar sesión",
+                            Toast.LENGTH_LONG
+                        ).show()
+
+                        FirebaseAuth.getInstance().signOut()
                     }
+                } else {
+                    // Si el login falló, mostramos el mensaje de error
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                 }
-        } else {
-            Toast.makeText(this, "Inserta un email y una contraseña", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    @Composable
-    fun Greeting2(modifier: Modifier = Modifier) {
-        var email by remember { mutableStateOf("") }
-        var password by remember { mutableStateOf("") }
-
-        Column(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Center
-        ) {
-            OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text("Email") },
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
-                label = { Text("Contraseña") },
-                visualTransformation = PasswordVisualTransformation(),
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(
-                onClick = { login(email, password) },
-            ) {
-                Text("Login")
             }
+        }) {
+            Text("Iniciar sesión")
         }
     }
 }
 
-
-
 @Preview(showBackground = true)
 @Composable
-fun GreetingPreview2() {
-    EjemploApiTheme {
-
-    }
+fun PreviewLoginScreen() {
+    LoginScreen(onLoginSuccess = {})
 }
