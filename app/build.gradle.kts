@@ -64,6 +64,9 @@ dependencies {
     //para la imagen del pokemon
     implementation("io.coil-kt:coil-compose:2.6.0")
 
+    //Para hacer los refrescos
+    implementation("com.google.accompanist:accompanist-swiperefresh:0.30.1")
+
     implementation ("com.squareup.retrofit2:retrofit:2.9.0")
     implementation ("com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.3")
     implementation ("com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter:0.9.2")

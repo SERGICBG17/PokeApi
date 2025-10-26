@@ -15,7 +15,10 @@ import com.example.ejemploapi.data.network.PokeAPI
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 
 @Composable
 fun ApiScreen(
@@ -29,6 +32,12 @@ fun ApiScreen(
     var cargando by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf<String?>(null) }
 
+    // Estado adicional para controlar si el usuario está refrescando manualmente con el gesto
+    val refrescando = remember { mutableStateOf(false) }
+
+    // Scope para lanzar corrutinas desde eventos como el gesto de refresco
+    val scope = rememberCoroutineScope()
+
     // Configuración de Retrofit: base URL y conversor JSON (Gson)
     val retrofit = remember {
         Retrofit.Builder()
@@ -37,9 +46,8 @@ fun ApiScreen(
             .build()
     }
 
-    // Al entrar en la pantalla, disparamos la carga de datos
-    LaunchedEffect(Unit) {
-        // Cambiamos al hilo para evitar NetworkOnMainThreadException
+    // Función que carga los datos desde la API (se puede reutilizar en el gesto de refresco)
+    suspend fun cargarPokemons() {
         withContext(Dispatchers.IO) {
             try {
                 // Creamos un cliente de Retrofit a partir de la interfaz PokeAPI
@@ -68,12 +76,17 @@ fun ApiScreen(
                 error = "Fallo de red o parseo: ${e.message ?: "desconocido"}"
                 Log.e("ApiScreen", "Error al obtener datos", e)
             } finally {
-                // Pase lo que pase, ya no estamos cargando
+                // Pase lo que pase, ya no estamos cargando ni refrescando
                 cargando = false
+                refrescando.value = false
             }
         }
     }
 
+    // Al entrar en la pantalla, disparamos la carga de datos
+    LaunchedEffect(Unit) {
+        cargarPokemons()
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
 
@@ -121,25 +134,38 @@ fun ApiScreen(
             }
 
             else -> {
-                // Lista de Pokémon en tarjetas
-                LazyColumn {
-                    items(pokemons) { pokemon ->
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(8.dp)
-                                .clickable {
-                                    // Extraemos el ID del Pokémon desde su URL (formato .../pokemon/{id}/)
-                                    val url = pokemon.getUrl()
-                                    val idTexto = url.trimEnd('/').split("/").last()
-                                    val id = idTexto.toInt()
-                                    onPokemonClick(id)
-                                }
-                        ) {
-                            Text(
-                                text = pokemon.getNombre(),
-                                modifier = Modifier.padding(16.dp)
-                            )
+                // Envolvemos la lista con SwipeRefresh para permitir el gesto de deslizar hacia abajo
+                SwipeRefresh(
+                    state = rememberSwipeRefreshState(isRefreshing = refrescando.value),
+                    onRefresh = {
+                        // Cuando el usuario desliza hacia abajo, recargamos los datos
+                        refrescando.value = true
+                        cargando = true
+                        scope.launch {
+                            cargarPokemons()
+                        }
+                    }
+                ) {
+                    // Lista de Pokémon en tarjetas
+                    LazyColumn {
+                        items(pokemons) { pokemon ->
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(8.dp)
+                                    .clickable {
+                                        // Extraemos el ID del Pokémon desde su URL (formato .../pokemon/{id}/)
+                                        val url = pokemon.getUrl()
+                                        val idTexto = url.trimEnd('/').split("/").last()
+                                        val id = idTexto.toInt()
+                                        onPokemonClick(id)
+                                    }
+                            ) {
+                                Text(
+                                    text = pokemon.getNombre(),
+                                    modifier = Modifier.padding(16.dp)
+                                )
+                            }
                         }
                     }
                 }
@@ -147,4 +173,3 @@ fun ApiScreen(
         }
     }
 }
-
