@@ -24,7 +24,7 @@ object Api
 
 // Pantalla que recibe un parámetro (por ejemplo, nombre)
 @Serializable
-data class Vista(val nombre: String)
+data class Vista(val id: Int)
 
 // si necesitamos pasar algo más pesado, un objeto, un array,
 // lo hacemos pasando id y utilizando sharedPrefs

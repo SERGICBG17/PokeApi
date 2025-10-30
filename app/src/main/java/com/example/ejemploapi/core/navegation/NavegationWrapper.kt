@@ -55,16 +55,21 @@ fun NavigationWrapper() {
         composable<Api> {
             ApiScreen(
                 onPerfilClick = { navController.navigate(Datos) },
-                onPokemonClick = { id -> navController.navigate(Vista(id.toString())) // Cuando pulsamos un Pokémon vamos a la pantalla de detalle
+                onPokemonClick = { id -> navController.navigate(Vista(id)) // Cuando pulsamos un Pokémon vamos a la pantalla de detalle
                 }
             )
         }
 
-        // Pantalla de detalle de un pokemon
-        composable<Vista> { backStackEntry ->
-            val args = backStackEntry.toRoute<Vista>()
-            val id = args.nombre.toInt()
-            // Aquí pasamos el navController para que el botón de volver funcione
+
+        // Definimos una ruta de navegación para mostrar la pantalla de detalle de un Pokémon
+        composable<Vista> { entradaPila ->
+            // Extraemos los argumentos que se pasaron a esta ruta usando la clase Vista
+            // Vista es una clase que tú defines con una propiedad 'id' como Int
+            val args = entradaPila.toRoute<Vista>()
+            // Accedemos directamente al ID del Pokémon desde los argumentos
+            val id = args.id
+            // Llamamos al composable DatosDelPokemonScreen, pasándole el ID del Pokémon
+            // También pasamos el navController para que el botón de "volver" dentro de esa pantalla funcione correctamente
             DatosDelPokemonScreen(id = id, navController = navController)
         }
     }
