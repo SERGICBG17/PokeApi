@@ -1,44 +1,71 @@
 package com.example.ejemploapi.ui.viewModels
 
 import androidx.lifecycle.ViewModel
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
+import androidx.lifecycle.viewModelScope
+import com.example.ejemploapi.data.repository.AuthRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
+/**
+ * ViewModel para la pantalla de Registro.
+ * Se encarga de crear el usuario en Firebase y enviar el email de verificación.
+ */
 class RegistroViewModel : ViewModel() {
 
-    // Creamos una instancia de FirebaseAuth para acceder a la autenticación
-    private val firebaseAuth = FirebaseAuth.getInstance()
+    private val authRepository = AuthRepository()
 
-    // Función que intenta registrar un nuevo usuario con email y contraseña
-    fun registrar(email: String, password: String, onResult: (Boolean, String?) -> Unit) {
-        // Comprobamos que el usuario haya escrito ambos campos
+    // Estados observables por la UI
+    private val _cargando = MutableStateFlow(false)
+    val cargando: StateFlow<Boolean> = _cargando
+
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error
+
+    private val _registroExitoso = MutableStateFlow(false)
+    val registroExitoso: StateFlow<Boolean> = _registroExitoso
+
+    /**
+     * Intenta registrar un usuario con email y contraseña.
+     * - Valida que los campos no estén vacíos
+     * - Valida que la contraseña tenga al menos 6 caracteres
+     * - Llama al repositorio para crear el usuario
+     * - Envía email de verificación
+     */
+    fun registrar(email: String, password: String) {
         if (email.isBlank() || password.isBlank()) {
-            onResult(false, "Rellena todos los campos") // Si falta algo, mostramos mensaje
+            _error.value = "Rellena todos los campos"
+            return
+        }
+        if (password.length < 6) {
+            _error.value = "La contraseña debe tener al menos 6 caracteres"
             return
         }
 
-        // Usamos Firebase para crear el usuario
-        firebaseAuth.createUserWithEmailAndPassword(email, password)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    // Si se creó correctamente, obtenemos el usuario actual
-                    val user = firebaseAuth.currentUser
-                    if (user != null) {
-                        // Le enviamos un email de verificación
-                        verificarEmail(user)
-                    }
-                    // Indicamos que el registro fue exitoso
-                    onResult(true, null)
-                } else {
-                    // Si falló (por ejemplo, email ya usado), mostramos mensaje de error
-                    onResult(false, "Error al registrar usuario")
+        viewModelScope.launch {
+            _cargando.value = true
+            _error.value = null
+            authRepository.register(email, password)
+                .onSuccess { user ->
+                    authRepository.sendEmailVerification(user)
+                        .onSuccess {
+                            _registroExitoso.value = true
+                            authRepository.logout() // cerramos sesión hasta que verifique
+                        }
+                        .onFailure { e ->
+                            _error.value = e.message ?: "Error al enviar verificación"
+                        }
                 }
-            }
+                .onFailure { e ->
+                    _error.value = e.message ?: "Error al registrar usuario"
+                }
+            _cargando.value = false
+        }
     }
 
-    // Función que envía un email de verificación al usuario
-    private fun verificarEmail(user: FirebaseUser) {
-        user.sendEmailVerification() // Firebase se encarga de enviar el correo
+    fun limpiarError() {
+        _error.value = null
     }
 }
+
 
