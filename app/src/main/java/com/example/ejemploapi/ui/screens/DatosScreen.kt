@@ -4,78 +4,91 @@ import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import com.example.ejemploapi.ui.viewModels.DatosViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.ejemploapi.ui.viewModels.PerfilViewModel
 
+/**
+ * Pantalla de perfil del usuario.
+ * - Muestra el email actual
+ * - Permite cambiar el email
+ * - Permite cerrar sesión
+ */
 @Composable
 fun DatosScreen(
-    onLogout: () -> Unit, // Se llama cuando el usuario cierra sesión
-    viewModel: DatosViewModel = DatosViewModel() // ViewModel que gestiona los datos del usuario
+    onLogout: () -> Unit,
+    viewModel: PerfilViewModel = viewModel()
 ) {
-    val context = LocalContext.current // Necesario para mostrar mensajes (Toast)
-    val usuario = viewModel.getUsuarioActual() // Obtenemos el usuario actual
-    var nuevoEmail by remember { mutableStateOf(usuario?.email ?: "") } // Email editable en pantalla
+    val context = LocalContext.current
 
-    // Todo lo que se muestra en pantalla
+    // Observamos los estados del ViewModel
+    val emailActual by viewModel.emailActual.observeAsState()
+    val mensaje by viewModel.mensaje.observeAsState()
+    val actualizando by viewModel.actualizando.observeAsState(false)
+
+    var nuevoEmail by remember { mutableStateOf(TextFieldValue("")) }
+
+    // Actualizamos el ViewModel cuando el usuario escribe
+    LaunchedEffect(nuevoEmail.text) {
+        viewModel.onNuevoEmailChanged(nuevoEmail.text)
+    }
+
     Column(
         modifier = Modifier
-            .fillMaxSize() // Ocupa toda la pantalla
-            .padding(16.dp), // Margen interno
-        verticalArrangement = Arrangement.Center, // Centrado vertical
-        horizontalAlignment = Alignment.CenterHorizontally // Centrado horizontal
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Título de la pantalla
-        Text(text = "Datos del usuario", style = MaterialTheme.typography.titleLarge)
+        Text("Perfil", style = MaterialTheme.typography.titleLarge)
 
-        Spacer(modifier = Modifier.height(16.dp)) // Espacio entre elementos
+        Spacer(modifier = Modifier.height(16.dp))
 
-        // Campo para editar el email
+        Text("Email actual:")
+        Text(emailActual ?: "Sin email", style = MaterialTheme.typography.bodyLarge)
+
+        Spacer(modifier = Modifier.height(32.dp))
+
         OutlinedTextField(
-            value = nuevoEmail, // Lo que se muestra en el campo
-            onValueChange = { nuevoEmail = it }, // Se actualiza cuando el usuario escribe
-            label = { Text("Email") }, // Etiqueta del campo
-            modifier = Modifier.fillMaxWidth() // Ocupa todo el ancho
+            value = nuevoEmail,
+            onValueChange = { nuevoEmail = it },
+            label = { Text("Nuevo email") },
+            modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.height(16.dp)) // Espacio entre campo y botón
+        Spacer(modifier = Modifier.height(16.dp))
 
-        // Botón para guardar el nuevo email
         Button(
-            onClick = {
-                // Llamamos al ViewModel para actualizar el email
-                viewModel.actualizarEmail(nuevoEmail) { success, message ->
-                    // Mostramos un mensaje corto en pantalla según si funcionó o no
-                    val texto = if (success) "Email actualizado" else message
-                    Toast.makeText(context, texto, Toast.LENGTH_SHORT).show()
-                }
-            },
+            onClick = { viewModel.actualizarEmail() },
+            enabled = !actualizando,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Actualizar email") // Texto del botón
+            if (actualizando) CircularProgressIndicator(modifier = Modifier.size(20.dp))
+            else Text("Actualizar email")
         }
 
-        Spacer(modifier = Modifier.height(32.dp)) // Espacio antes del botón de cerrar sesión
+        Spacer(modifier = Modifier.height(32.dp))
 
-        // Botón para cerrar sesión
         Button(
             onClick = {
-                viewModel.cerrarSesion() // Cerramos sesión desde el ViewModel
-                onLogout() // Ejecutamos la función que nos pasaron (por ejemplo, navegar al login)
+                viewModel.cerrarSesion()
+                Toast.makeText(context, "Sesión cerrada", Toast.LENGTH_SHORT).show()
+                onLogout()
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Cerrar sesión") // Texto del botón
+            Text("Cerrar sesión")
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        mensaje?.let {
+            Text(it, color = MaterialTheme.colorScheme.error)
         }
     }
 }
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewDatosScreen() {
-    DatosScreen(onLogout = {})
-}
-

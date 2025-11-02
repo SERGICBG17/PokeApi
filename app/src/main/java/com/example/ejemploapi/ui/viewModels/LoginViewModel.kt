@@ -1,5 +1,7 @@
 package com.example.ejemploapi.ui.viewModels
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ejemploapi.data.repository.AuthRepository
@@ -14,52 +16,56 @@ import kotlinx.coroutines.launch
  */
 class LoginViewModel : ViewModel() {
 
-    private val authRepository = AuthRepository() // Repositorio que habla con Firebase
+    private val authRepository = AuthRepository()
+    private val _email = MutableLiveData<String?>(null)
+    val email: LiveData<String?> = _email
 
-    // Estados que la UI puede observar
-    private val _cargando = MutableStateFlow(false) // true mientras se hace login
-    val cargando: StateFlow<Boolean> = _cargando
+    private val _password = MutableLiveData<String?>(null)
+    val password: LiveData<String?> = _password
 
-    private val _error = MutableStateFlow<String?>(null) // mensaje de error si algo falla
-    val error: StateFlow<String?> = _error
+    private val _errorMessage = MutableLiveData(false)
+    val errorMessage : LiveData<Boolean> = _errorMessage
 
-    private val _loginExitoso = MutableStateFlow(false) // true si el login fue correcto
-    val loginExitoso: StateFlow<Boolean> = _loginExitoso
+    private val _isLoading = MutableLiveData(false)
+    val isLoading : LiveData<Boolean> = _isLoading
 
-    /**
-     * Intenta iniciar sesión con email y contraseña.
-     * - Valida que no estén vacíos
-     * - Llama al repositorio
-     * - Comprueba si el email está verificado
-     */
-    fun login(email: String, password: String) {
-        if (email.isBlank() || password.isBlank()) {
-            _error.value = "Rellena todos los campos"
+    private val _isLoadiginOk = MutableLiveData(false)
+    val isLoadiginOk : LiveData<Boolean> = _isLoadiginOk
+
+    fun onEmailChanged(email: String) {
+        _email.value = email
+    }
+
+    fun onPasswordChanged(password: String) {
+        _password.value = password
+    }
+
+    fun onLogin(){
+        val emailValue = _email.value ?: ""
+        val passwordValue = _password.value ?: ""
+
+        if (emailValue.isBlank() || passwordValue.isBlank()) {
+            //poner todas las comprobaciones
+            _errorMessage.value = true
             return
         }
 
         viewModelScope.launch {
-            _cargando.value = true
-            _error.value = null
-            authRepository.login(email, password)
-                .onSuccess { user ->
-                    if (user.isEmailVerified) {
-                        _loginExitoso.value = true
-                    } else {
-                        _error.value = "Verifica tu email antes de iniciar sesión"
-                        authRepository.logout()
-                    }
-                }
-                .onFailure { e ->
-                    _error.value = e.message ?: "Error al iniciar sesión"
-                }
-            _cargando.value = false
+
+            _isLoading.value = true
+            val result = authRepository.login(emailValue, passwordValue)
+
+            result.onSuccess {
+                _isLoadiginOk.value = true
+            }.onFailure {
+                _errorMessage.value = true
+            }
+
+            _isLoading.value = false
         }
+
     }
 
-    fun limpiarError() {
-        _error.value = null
-    }
 }
 
 

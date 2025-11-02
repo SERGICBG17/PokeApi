@@ -3,100 +3,86 @@ package com.example.ejemploapi.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.example.ejemploapi.ui.viewModels.VistaViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.ejemploapi.ui.viewModels.DatosViewModel
 
 /**
- * Pantalla de detalle de un Pokémon.
- * - Ya no crea Retrofit ni hace llamadas directas: usa VistaViewModel.
- * - Mantiene el botón de volver que utiliza el NavController.
+ * Pantalla que muestra el detalle de un Pokémon.
+ * - Usa DatosViewModel para obtener los datos
+ * - Muestra nombre, peso, altura e imagen
+ * - Incluye botón para volver atrás
  */
 @Composable
 fun DatosDelPokemonScreen(
     id: Int,
     navController: NavController?,
-    viewModel: VistaViewModel = viewModel()
+    viewModel: DatosViewModel = viewModel()
 ) {
-    val pokemon by viewModel.pokemonDetalle.collectAsState()
-    val error by viewModel.error.collectAsState()
-    val cargando by viewModel.cargando.collectAsState()
+    // Observamos los estados del ViewModel
+    val pokemon by viewModel.pokemonDetalle.observeAsState()
+    val isLoading by viewModel.isLoading.observeAsState(false)
+    val errorMessage by viewModel.errorMessage.observeAsState()
 
-    // Carga el detalle al entrar con el ID
+    // Al entrar en la pantalla, cargamos el Pokémon por ID
     LaunchedEffect(id) {
         viewModel.cargarPokemonPorId(id)
     }
 
-    when {
-        cargando -> {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
+    // Mostramos un spinner si está cargando
+    if (isLoading) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
         }
+        return
+    }
 
-        error != null -> {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = error ?: "Error desconocido")
-            }
+    // Si hay error, lo mostramos
+    if (errorMessage != null) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text(text = errorMessage ?: "Error desconocido")
         }
+        return
+    }
 
-        pokemon != null -> {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+    // Si el Pokémon se cargó correctamente, mostramos sus datos
+    pokemon?.let {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Nombre: ${it.getNombre()}",
+                style = MaterialTheme.typography.titleLarge
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(text = "Peso: ${it.weight}")
+            Text(text = "Altura: ${it.height}")
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            AsyncImage(
+                model = it.sprites?.frontDefault,
+                contentDescription = "Imagen de ${it.getNombre()}",
+                modifier = Modifier.size(200.dp)
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Button(
+                onClick = { navController?.popBackStack() },
+                modifier = Modifier.fillMaxWidth()
             ) {
-                // Nombre del Pokémon
-                Text(
-                    text = "Nombre: ${pokemon!!.getNombre()}",
-                    style = MaterialTheme.typography.titleLarge
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Peso y altura
-                Text(text = "Peso: ${pokemon!!.weight}")
-                Text(text = "Altura: ${pokemon!!.height}")
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Imagen del Pokémon usando Coil
-                AsyncImage(
-                    model = pokemon!!.sprites?.frontDefault,
-                    contentDescription = "Imagen de ${pokemon!!.getNombre()}",
-                    modifier = Modifier.size(200.dp)
-                )
-
-                Spacer(modifier = Modifier.height(32.dp))
-
-                // Botón para volver
-                Button(
-                    onClick = { navController?.popBackStack() },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Volver a la lista")
-                }
-            }
-        }
-
-        else -> {
-            // Estado vacío si aún no hay datos ni error
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = "Cargando datos...")
+                Text("Volver a la lista")
             }
         }
     }

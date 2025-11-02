@@ -1,44 +1,52 @@
 package com.example.ejemploapi.ui.viewModels
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
-
+import androidx.lifecycle.viewModelScope
+import com.example.ejemploapi.data.model.Pokemon
+import com.example.ejemploapi.data.repository.PokemonRepository
+import kotlinx.coroutines.launch
 class DatosViewModel : ViewModel() {
 
-    // Obtenemos una instancia de FirebaseAuth para acceder al usuario actual
-    private val firebaseAuth = FirebaseAuth.getInstance()
+    private val repository = PokemonRepository()
 
-    // Devuelve el usuario que está logueado en este momento
-    fun getUsuarioActual(): FirebaseUser? {
-        return firebaseAuth.currentUser
-    }
+    private val _pokemons = MutableLiveData<List<Pokemon>>(emptyList())
+    val pokemons: LiveData<List<Pokemon>> = _pokemons
 
-    // Intenta actualizar el email del usuario
-    // Usa una función que recibe el nuevo email y un callback para saber si funcionó
-    fun actualizarEmail(nuevoEmail: String, onResult: (Boolean, String?) -> Unit) {
-        val user = firebaseAuth.currentUser
+    private val _pokemonDetalle = MutableLiveData<Pokemon?>(null)
+    val pokemonDetalle: LiveData<Pokemon?> = _pokemonDetalle
 
-        // Si hay usuario logueado, intentamos actualizar el email
-        if (user != null) {
-            user.updateEmail(nuevoEmail)
-                .addOnCompleteListener { task ->
-                    // Si fue exitoso, devolvemos true
-                    if (task.isSuccessful) {
-                        onResult(true, null)
-                    } else {
-                        // Si falló, devolvemos false y un mensaje de error
-                        onResult(false, "Error al actualizar el email")
-                    }
-                }
-        } else {
-            // Si no hay usuario logueado, devolvemos error
-            onResult(false, "Usuario no autenticado")
+    private val _errorMessage = MutableLiveData<String?>(null)
+    val errorMessage: LiveData<String?> = _errorMessage
+
+    private val _isLoading = MutableLiveData(false)
+    val isLoading: LiveData<Boolean> = _isLoading
+
+    fun cargarPokemons() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            val result = repository.getPokemonsList()
+            result.onSuccess {
+                _pokemons.value = it
+            }.onFailure {
+                _errorMessage.value = it.message
+            }
+            _isLoading.value = false
         }
     }
 
-    // Cierra la sesión del usuario actual
-    fun cerrarSesion() {
-        firebaseAuth.signOut()
+    fun cargarPokemonPorId(id: Int) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            val result = repository.getPokemonById(id)
+            result.onSuccess {
+                _pokemonDetalle.value = it
+            }.onFailure {
+                _errorMessage.value = it.message
+            }
+            _isLoading.value = false
+        }
     }
+
 }

@@ -1,26 +1,18 @@
 package com.example.ejemploapi.ui.screens
 
 import android.widget.Toast
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.ejemploapi.R
 import com.example.ejemploapi.ui.viewModels.LoginViewModel
 
-/**
- * Pantalla de inicio de sesión.
- * - Muestra campos de email y contraseña
- * - Llama al ViewModel para hacer login
- * - Reacciona a estados de carga, error y éxito
- */
 @Composable
 fun LoginScreen(
     onLoginSuccess: () -> Unit,
@@ -28,25 +20,30 @@ fun LoginScreen(
 ) {
     val context = LocalContext.current
 
-    val cargando by viewModel.cargando.collectAsState()
-    val error by viewModel.error.collectAsState()
-    val loginExitoso by viewModel.loginExitoso.collectAsState()
+    // Observamos los estados del ViewModel
+    val isLoading by viewModel.isLoading.observeAsState(false)
+    val errorMessage by viewModel.errorMessage.observeAsState(false)
+    val isLoginOk by viewModel.isLoadiginOk.observeAsState(false)
 
+    // Campos de texto locales
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
+    // Actualizamos el ViewModel cuando el usuario escribe
+    LaunchedEffect(email) { viewModel.onEmailChanged(email) }
+    LaunchedEffect(password) { viewModel.onPasswordChanged(password) }
+
     // Si el login fue exitoso, navegamos
-    LaunchedEffect(loginExitoso) {
-        if (loginExitoso) {
+    LaunchedEffect(isLoginOk) {
+        if (isLoginOk) {
             onLoginSuccess()
         }
     }
 
     // Si hay error, mostramos un Toast
-    LaunchedEffect(error) {
-        error?.let {
-            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
-            viewModel.limpiarError()
+    LaunchedEffect(errorMessage) {
+        if (errorMessage) {
+            Toast.makeText(context, "Error al iniciar sesión", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -58,15 +55,6 @@ fun LoginScreen(
         Text("Inicio de Sesión", style = MaterialTheme.typography.titleLarge)
 
         Spacer(modifier = Modifier.height(8.dp))
-
-        // Imagen del logo
-        Image(
-            painter = painterResource(id = R.drawable.logo3),
-            contentDescription = "Logo",
-            modifier = Modifier.height(200.dp)
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
             value = email,
@@ -88,15 +76,12 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
-            onClick = { viewModel.login(email, password) },
-            enabled = !cargando,
+            onClick = { viewModel.onLogin() },
+            enabled = !isLoading,
             modifier = Modifier.fillMaxWidth()
         ) {
-            if (cargando) {
-                CircularProgressIndicator(modifier = Modifier.size(20.dp))
-            } else {
-                Text("Iniciar sesión")
-            }
+            if (isLoading) CircularProgressIndicator(modifier = Modifier.size(20.dp))
+            else Text("Iniciar sesión")
         }
     }
 }
