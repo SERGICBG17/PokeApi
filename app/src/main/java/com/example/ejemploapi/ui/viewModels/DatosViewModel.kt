@@ -25,28 +25,48 @@ class DatosViewModel : ViewModel() {
 
     fun cargarPokemons() {
         viewModelScope.launch {
-            _isLoading.value = true
-            val result = repository.getPokemonsList()
-            result.onSuccess {
-                _pokemons.value = it
-            }.onFailure {
-                _errorMessage.value = it.message
+            _isLoading.value=true
+
+            if(repository.getPokemonsList() == null){
+                _errorMessage.value = "Error al obtener datos"
+            }else{
+                _pokemons.value = repository.getPokemonsList()
             }
             _isLoading.value = false
         }
     }
 
-    fun cargarPokemonPorId(id: Int) {
+    /**
+     * Carga el detalle de un Pokémon desde su URL.
+     * Convierte la URL en ID y llama al repositorio.
+     *
+     * @param url URL completa del Pokémon en la PokéAPI
+     */
+    fun cargarDetallePokemon(url: String) {
         viewModelScope.launch {
             _isLoading.value = true
-            val result = repository.getPokemonById(id)
-            result.onSuccess {
-                _pokemonDetalle.value = it
-            }.onFailure {
-                _errorMessage.value = it.message
+            _errorMessage.value = null
+            _pokemonDetalle.value = null
+
+            val detalle = repository.getPokemonByUrl(url)
+
+            if (detalle != null) {
+                _pokemonDetalle.value = detalle
+            } else {
+                _errorMessage.value = "No se pudo cargar el detalle del Pokémon"
             }
+
             _isLoading.value = false
         }
     }
+
+    /**
+     * Construye la URL de imagen frontal del Pokémon usando su ID.
+     * Ejemplo: id = 25 → https://.../pokemon/25.png
+     */
+    fun buildImageUrl(id: Unit): String {
+        return "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/$id.png"
+    }
+
 
 }

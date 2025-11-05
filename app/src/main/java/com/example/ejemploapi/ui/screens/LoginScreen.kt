@@ -16,6 +16,7 @@ import com.example.ejemploapi.ui.viewModels.LoginViewModel
 @Composable
 fun LoginScreen(
     onLoginSuccess: () -> Unit,
+    onBack: () -> Unit,
     viewModel: LoginViewModel = viewModel()
 ) {
     val context = LocalContext.current
@@ -83,5 +84,15 @@ fun LoginScreen(
             if (isLoading) CircularProgressIndicator(modifier = Modifier.size(20.dp))
             else Text("Iniciar sesión")
         }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Button(
+            onClick =  onBack,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Volver")
+        }
+
     }
 }

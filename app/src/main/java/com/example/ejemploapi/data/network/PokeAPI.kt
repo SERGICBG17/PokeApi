@@ -1,7 +1,7 @@
 package com.example.ejemploapi.data.network
 
 import com.example.ejemploapi.data.model.Pokemon
-import com.example.ejemploapi.data.network.PokemonResponse
+import com.example.ejemploapi.data.model.PokemonResponse
 import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Headers

@@ -27,7 +27,8 @@ fun NavigationWrapper() {
         composable<Login> {
             LoginScreen(
                 // Después de iniciar sesión vamos a la lista de Pokémon
-                onLoginSuccess = { navController.navigate(Api) }
+                onLoginSuccess = { navController.navigate(LlamadaApiPokemons) },
+                onBack = { navController.popBackStack() }
             )
         }
 
@@ -35,7 +36,8 @@ fun NavigationWrapper() {
         composable<Registro> {
             RegistroScreen(
                 // Después de registrarse vamos a la pantalla de login
-                onRegistroSuccess = { navController.navigate(Login) }
+                onRegistroSuccess = { navController.navigate(Login) },
+                onBack = { navController.popBackStack() }//para volver hacia atras en la pila
             )
         }
 
@@ -50,8 +52,8 @@ fun NavigationWrapper() {
         }
 
         // Pantalla de lista de pokemons
-        composable<Api> {
-            ApiScreen(
+        composable<LlamadaApiPokemons> {
+            ListadoDePokemons(
                 // Al pulsar "Cerrar sesión", volvemos a Inicio y limpiamos el stack
                 onPerfilClick = {
                     navController.navigate(Datos) {
@@ -59,17 +61,26 @@ fun NavigationWrapper() {
                     }
                 },
                 // Cuando pulsamos un Pokémon vamos a la pantalla de detalle
-                onPokemonClick = { id ->
-                    navController.navigate(Vista(id))
+                onPokemonClick = { url, nombre ->
+                    navController.navigate(DatosDelPokemon(
+                        url = url,
+                        nombre = nombre
+                        )
+                    )
                 }
             )
         }
 
         // Pantalla de detalle de un Pokémon
-        composable<Vista> { entradaPila ->
-            val args = entradaPila.toRoute<Vista>()
-            val id = args.id
-            DatosDelPokemonScreen(id = id, navController = navController)
+        composable<DatosDelPokemon> { backStackEntry ->
+            val args = backStackEntry.toRoute<DatosDelPokemon>()
+            val url = args.url
+            val nombre = args.nombre
+            DatosDelPokemonScreen(
+                url = url,
+                nombre = nombre,
+                onBack = { navController.popBackStack() }
+            )
         }
     }
 }

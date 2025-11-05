@@ -8,33 +8,43 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.ejemploapi.ui.viewModels.DatosViewModel
 
 /**
- * Pantalla que muestra el detalle de un Pokémon.
- * - Usa DatosViewModel para obtener los datos
- * - Muestra nombre, peso, altura e imagen
+ * Pantalla que muestra el nombre y la imagen de un Pokémon.
+ * - Usa DatosViewModel para obtener los datos desde la URL
+ * - Muestra solo el nombre y la imagen
  * - Incluye botón para volver atrás
+ *
+ * @param url URL del Pokémon en la PokéAPI
+ * @param nombre Nombre del Pokémon (para mostrar mientras carga)
+ * @param onBack Acción al pulsar "Volver"
+ * @param viewModel ViewModel que gestiona la carga del detalle
  */
 @Composable
 fun DatosDelPokemonScreen(
-    id: Int,
-    navController: NavController?,
+    url: String,
+    nombre: String,
+    onBack: () -> Unit,
     viewModel: DatosViewModel = viewModel()
 ) {
-    // Observamos los estados del ViewModel
     val pokemon by viewModel.pokemonDetalle.observeAsState()
     val isLoading by viewModel.isLoading.observeAsState(false)
     val errorMessage by viewModel.errorMessage.observeAsState()
 
-    // Al entrar en la pantalla, cargamos el Pokémon por ID
-    LaunchedEffect(id) {
-        viewModel.cargarPokemonPorId(id)
+    // Cargar datos al entrar
+    LaunchedEffect(url) {
+        viewModel.cargarDetallePokemon(url)
     }
 
-    // Mostramos un spinner si está cargando
+    // Extraer el ID desde la URL para construir la imagen
+    val id = viewModel.cargarDetallePokemon(url)
+
+    // Construir la URL de imagen de forma dinámica
+    val imagenUrl = viewModel.buildImageUrl(id)
+
+    // Estado: cargando
     if (isLoading) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator()
@@ -42,7 +52,7 @@ fun DatosDelPokemonScreen(
         return
     }
 
-    // Si hay error, lo mostramos
+    // Estado: error
     if (errorMessage != null) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text(text = errorMessage ?: "Error desconocido")
@@ -50,7 +60,7 @@ fun DatosDelPokemonScreen(
         return
     }
 
-    // Si el Pokémon se cargó correctamente, mostramos sus datos
+    // Estado: datos cargados
     pokemon?.let {
         Column(
             modifier = Modifier
@@ -59,27 +69,22 @@ fun DatosDelPokemonScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Nombre: ${it.getNombre()}",
+                text = it.name,
                 style = MaterialTheme.typography.titleLarge
             )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(text = "Peso: ${it.weight}")
-            Text(text = "Altura: ${it.height}")
 
             Spacer(modifier = Modifier.height(16.dp))
 
             AsyncImage(
-                model = it.sprites?.frontDefault,
-                contentDescription = "Imagen de ${it.getNombre()}",
+                model = imagenUrl,
+                contentDescription = "Imagen de ${it.name}",
                 modifier = Modifier.size(200.dp)
             )
 
             Spacer(modifier = Modifier.height(32.dp))
 
             Button(
-                onClick = { navController?.popBackStack() },
+                onClick = onBack,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Volver a la lista")

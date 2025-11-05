@@ -16,6 +16,7 @@ import com.example.ejemploapi.ui.viewModels.RegistroViewModel
 @Composable
 fun RegistroScreen(
     onRegistroSuccess: () -> Unit,
+    onBack: () -> Unit,
     viewModel: RegistroViewModel = viewModel()
 ) {
     val context = LocalContext.current
@@ -79,5 +80,15 @@ fun RegistroScreen(
             if (isLoading) CircularProgressIndicator(modifier = Modifier.size(20.dp))
             else Text("Registrarse")
         }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Button(
+            onClick = onBack ,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Volver")
+        }
+
     }
 }

@@ -1,6 +1,5 @@
-package com.example.ejemploapi.data.network
+package com.example.ejemploapi.data.model
 
-import com.example.ejemploapi.data.model.Pokemon
 import com.google.gson.annotations.SerializedName
 
 data class PokemonResponse (

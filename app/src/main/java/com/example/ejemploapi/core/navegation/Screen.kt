@@ -20,11 +20,11 @@ object Datos
 
 // Pantalla que muestra datos de una API pública (por ejemplo, Pokémon)
 @Serializable
-object Api
+object LlamadaApiPokemons
 
 // Pantalla que recibe un parámetro (por ejemplo, nombre)
 @Serializable
-data class Vista(val id: Int)
+data class DatosDelPokemon(val nombre: String, val url: String)
 
 // si necesitamos pasar algo más pesado, un objeto, un array,
 // lo hacemos pasando id y utilizando sharedPrefs
