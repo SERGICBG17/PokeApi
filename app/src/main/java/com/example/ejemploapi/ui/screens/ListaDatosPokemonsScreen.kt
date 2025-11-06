@@ -53,7 +53,6 @@ fun ListadoDePokemons(
         ListaPokemons(
             pokemons = pokemons,
             onPokemonClick = onPokemonClick,
-            viewModel = viewModel,
             modifier = Modifier.weight(1f)
         )
     }
@@ -64,7 +63,6 @@ fun ListadoDePokemons(
 fun ListaPokemons(
     pokemons: List<Pokemon>,
     onPokemonClick: (String, String) -> Unit,
-    viewModel: DatosViewModel,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -75,10 +73,8 @@ fun ListaPokemons(
     ) {
         items(pokemons.size) { index ->
             val pokemon = pokemons[index]
-            val id = viewModel.cargarDetallePokemon(pokemon.url).toString()
-
             Button(
-                onClick = { onPokemonClick(id, pokemon.name) },
+                onClick = { onPokemonClick(pokemon.url, pokemon.name) },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(text = pokemon.name)
