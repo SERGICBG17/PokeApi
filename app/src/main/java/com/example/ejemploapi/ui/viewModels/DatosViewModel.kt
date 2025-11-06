@@ -23,6 +23,7 @@ class DatosViewModel : ViewModel() {
     private val _isLoading = MutableLiveData(false)
     val isLoading: LiveData<Boolean> = _isLoading
 
+    //cargamos la lista de pokemons
     fun cargarPokemons() {
         viewModelScope.launch {
             _isLoading.value=true
@@ -40,7 +41,7 @@ class DatosViewModel : ViewModel() {
      * Carga el detalle de un Pokémon desde su URL.
      * Convierte la URL en ID y llama al repositorio.
      *
-     * @param url URL completa del Pokémon en la PokéAPI
+     * URL completa del Pokémon en la PokéAPI
      */
     fun cargarDetallePokemon(url: String) {
         viewModelScope.launch {
@@ -68,6 +69,9 @@ class DatosViewModel : ViewModel() {
         return "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/$id.png"
     }
 
+    /**
+     * Sabiendo la URL del Pokémon, extrae el ID numérico.
+     */
     fun extraerIdDesdeUrl(url: String): Int {
         return url.trimEnd('/')
             .substringAfterLast('/')

@@ -18,7 +18,7 @@ fun NavigationWrapper() {
         // Pantalla de inicio
         composable<Inicio> {
             InicioScreen(
-                onLoginClick = { navController.navigate(Login) },
+                onLoginClick = { navController.navigate(Login) },//pasamos las nevegaciones que hacemos
                 onRegistroClick = { navController.navigate(Registro) }
             )
         }
@@ -41,11 +41,11 @@ fun NavigationWrapper() {
             )
         }
 
-        composable<Datos> {
+        composable<DatosDelPerfil> {
             DatosScreen(
                 onLogout = {
                     navController.navigate(Inicio) {
-                        popUpTo(Inicio) { inclusive = true }
+                        popUpTo(Inicio) { inclusive = true }//si es exitoso
                     }
                 }
             )
@@ -56,7 +56,7 @@ fun NavigationWrapper() {
             ListadoDePokemons(
                 // Al pulsar "Cerrar sesión", volvemos a Inicio y limpiamos el stack
                 onPerfilClick = {
-                    navController.navigate(Datos) {
+                    navController.navigate(DatosDelPerfil) {
                         popUpTo(Inicio) { inclusive = true }
                     }
                 },

@@ -27,8 +27,8 @@ class PokemonRepository {
      * Obtiene los datos de un Pokémon a partir de su URL.
      * Convierte la URL en ID y llama al método getPokemon(id).
      *
-     * @param url URL completa del Pokémon en la PokéAPI
-     * @return Objeto [Pokemon] si la llamada es exitosa, o null si falla
+     * URL completa del Pokémon en la PokéAPI
+     * Devuelve un Objeto [Pokemon] si la llamada es exitosa, o null si falla
      */
     suspend fun getPokemonByUrl(url: String): Pokemon? {
         return try {

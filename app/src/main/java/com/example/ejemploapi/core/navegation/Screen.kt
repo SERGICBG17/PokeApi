@@ -16,13 +16,13 @@ object Inicio
 
 // Pantalla que muestra y permite editar los datos del usuario
 @Serializable
-object Datos
+object DatosDelPerfil
 
 // Pantalla que muestra datos de una API pública (por ejemplo, Pokémon)
 @Serializable
 object LlamadaApiPokemons
 
-// Pantalla que recibe un parámetro (por ejemplo, nombre)
+// Pantalla que recibe un parámetro (por ejemplo, nombre y url)
 @Serializable
 data class DatosDelPokemon(val nombre: String, val url: String)
 

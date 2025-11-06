@@ -18,7 +18,7 @@ import com.example.ejemploapi.ui.viewModels.DatosViewModel
  * - Incluye botón para volver atrás
  *
  * URL del Pokémon en la PokéAPI
- * Nombre del Pokémon (para mostrar mientras carga)
+ * Nombre del Pokémon
  * Acción al pulsar "Volver"
  * ViewModel que gestiona la carga del detalle
  */
@@ -66,8 +66,11 @@ fun DatosDelPokemonScreen(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             Text(
-                text = it.name,
+                text = nombre,
                 style = MaterialTheme.typography.titleLarge
             )
 
@@ -75,7 +78,7 @@ fun DatosDelPokemonScreen(
 
             AsyncImage(
                 model = imagenUrl,
-                contentDescription = "Imagen de ${it.name}",
+                contentDescription = "Imagen de ${nombre}",//se podría quitar de recibir el nombre y ponet it.name pero lo dejo así
                 modifier = Modifier.size(200.dp)
             )
 

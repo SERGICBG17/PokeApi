@@ -50,6 +50,7 @@ fun DatosScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         Text("Email actual:")
+        //un ternario para no poner if pero basicamente es que si no tiene email que ponga sin email
         Text(emailActual ?: "Sin email", style = MaterialTheme.typography.bodyLarge)
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -68,8 +69,11 @@ fun DatosScreen(
             enabled = !actualizando,
             modifier = Modifier.fillMaxWidth()
         ) {
-            if (actualizando) CircularProgressIndicator(modifier = Modifier.size(20.dp))
-            else Text("Actualizar email")
+            if (actualizando){
+                CircularProgressIndicator(modifier = Modifier.size(20.dp))
+            } else{
+                Text("Actualizar email")
+            }
         }
 
         Spacer(modifier = Modifier.height(32.dp))
