@@ -17,10 +17,10 @@ import com.example.ejemploapi.ui.viewModels.DatosViewModel
  * - Muestra solo el nombre y la imagen
  * - Incluye botón para volver atrás
  *
- * @param url URL del Pokémon en la PokéAPI
- * @param nombre Nombre del Pokémon (para mostrar mientras carga)
- * @param onBack Acción al pulsar "Volver"
- * @param viewModel ViewModel que gestiona la carga del detalle
+ * URL del Pokémon en la PokéAPI
+ * Nombre del Pokémon (para mostrar mientras carga)
+ * Acción al pulsar "Volver"
+ * ViewModel que gestiona la carga del detalle
  */
 @Composable
 fun DatosDelPokemonScreen(
@@ -33,15 +33,13 @@ fun DatosDelPokemonScreen(
     val isLoading by viewModel.isLoading.observeAsState(false)
     val errorMessage by viewModel.errorMessage.observeAsState()
 
-    // Cargar datos al entrar
+    // Cargar datos solo una vez
     LaunchedEffect(url) {
         viewModel.cargarDetallePokemon(url)
     }
 
-    // Extraer el ID desde la URL para construir la imagen
-    val id = viewModel.cargarDetallePokemon(url)
-
-    // Construir la URL de imagen de forma dinámica
+    // Usar las funciones del ViewModel
+    val id = viewModel.extraerIdDesdeUrl(url)
     val imagenUrl = viewModel.buildImageUrl(id)
 
     // Estado: cargando

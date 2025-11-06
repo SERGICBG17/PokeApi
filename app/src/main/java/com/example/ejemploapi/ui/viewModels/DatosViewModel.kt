@@ -64,8 +64,14 @@ class DatosViewModel : ViewModel() {
      * Construye la URL de imagen frontal del Pokémon usando su ID.
      * Ejemplo: id = 25 → https://.../pokemon/25.png
      */
-    fun buildImageUrl(id: Unit): String {
+    fun buildImageUrl(id: Int): String {
         return "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/$id.png"
+    }
+
+    fun extraerIdDesdeUrl(url: String): Int {
+        return url.trimEnd('/')
+            .substringAfterLast('/')
+            .toIntOrNull() ?: -1
     }
 
 

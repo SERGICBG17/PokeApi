@@ -4,16 +4,6 @@ import com.example.ejemploapi.data.model.Pokemon
 import com.example.ejemploapi.data.network.RetrofitClient
 import retrofit2.await
 
-/**
- * Repositorio que encapsula la lógica de acceso a datos de Pokémon desde la PokeAPI.
- *
- * Este repositorio se encarga de:
- * - Obtener la lista de Pokémon disponibles.
- * - Obtener los datos de un Pokémon específico por su ID.
- *
- * Utiliza Retrofit a través de [RetrofitClient.pokeAPI] y expone funciones suspend
- * para ser usadas desde ViewModels con corrutinas.
- */
 class PokemonRepository {
 
     // Instancia de la interfaz PokeAPI

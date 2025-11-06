@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -23,16 +24,13 @@ fun ListadoDePokemons(
     onPokemonClick: (String, String) -> Unit,
     viewModel: DatosViewModel = viewModel()
 ) {
-    val pokemons = viewModel.pokemons.value
+    val pokemons by viewModel.pokemons.observeAsState(emptyList())
 
-    // Cargar datos al entrar
     LaunchedEffect(Unit) {
         viewModel.cargarPokemons()
     }
 
-    Column(
-        modifier = Modifier.fillMaxSize()
-    ) {
+    Column(modifier = Modifier.fillMaxSize()) {
         Text(
             text = "Pokédex",
             style = MaterialTheme.typography.titleLarge,
