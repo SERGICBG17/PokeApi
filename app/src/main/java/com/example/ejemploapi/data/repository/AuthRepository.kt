@@ -12,30 +12,42 @@ class AuthRepository {
     }
 
     suspend fun register(email: String, password: String): Result<FirebaseUser> {
-        val result = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
-        if (result.user != null) {
-            return Result.success(result.user!!)
-        } else {
-            return Result.failure(Exception("Error al crear usuario"))
+        try{
+            val result = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
+            if (result.user != null) {
+                return Result.success(result.user!!)
+            } else {
+                return Result.failure(Exception("Error al crear usuario"))
+            }
+        }catch (e: Exception) {
+            return Result.failure(Exception("Error al registrar"))
         }
     }
 
     suspend fun login(email: String, password: String): Result<FirebaseUser> {
-        val result = firebaseAuth.signInWithEmailAndPassword(email, password).await()
-        if (result.user != null) {
-            return Result.success(result.user!!)
-        } else {
-            return Result.failure(Exception("Error al iniciar sesión"))
+        try{
+            val result = firebaseAuth.signInWithEmailAndPassword(email, password).await()
+            if (result.user != null) {
+                return Result.success(result.user!!)
+            } else {
+                return Result.failure(Exception("Error al iniciar sesión"))
+            }
+        }catch (e: Exception) {
+            return Result.failure(Exception("Email o contraseña incorrectos"))
         }
     }
 
     suspend fun updateEmail(email: String): Result<FirebaseUser> {
-        val user = firebaseAuth.currentUser
-        if (user != null) {
-            user.verifyBeforeUpdateEmail(email).await()
-            return Result.success(user)
-        } else {
-            return Result.failure(Exception("Usuario no autenticado"))
+        try{
+            val user = firebaseAuth.currentUser
+            if (user != null) {
+                user.verifyBeforeUpdateEmail(email).await()
+                return Result.success(user)
+            } else {
+                return Result.failure(Exception("Usuario no autenticado"))
+            }
+        }catch (e: Exception) {
+            return Result.failure(Exception("Error al actualizar email"))
         }
     }
 
