@@ -29,6 +29,26 @@ class AuthRepository {
         }
     }
 
+    suspend fun updateEmail(email: String): Result<FirebaseUser> {
+        val user = firebaseAuth.currentUser
+        if (user != null) {
+            user.verifyBeforeUpdateEmail(email).await()
+            return Result.success(user)
+        } else {
+            return Result.failure(Exception("Usuario no autenticado"))
+        }
+    }
+
+    suspend fun updatePassword(newPassword: String): Result<Unit> {
+        val user = firebaseAuth.currentUser ?: return Result.failure(Exception("Usuario no autenticado"))
+        return try {
+            user.updatePassword(newPassword).await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     fun logout() {
         firebaseAuth.signOut()
     }

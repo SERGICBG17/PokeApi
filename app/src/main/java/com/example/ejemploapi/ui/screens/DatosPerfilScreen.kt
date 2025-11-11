@@ -65,7 +65,7 @@ fun DatosScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
-            onClick = { viewModel.actualizarEmail() },
+            onClick = { viewModel.actualizarEmail(nuevoEmail.toString()) },
             enabled = !actualizando,
             modifier = Modifier.fillMaxWidth()
         ) {
