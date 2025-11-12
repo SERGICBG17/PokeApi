@@ -63,7 +63,7 @@ fun LoginScreen(
         Image(
             painter = painterResource(id = R.drawable.logo3),
             contentDescription = "Logo",
-            modifier = Modifier.height(200.dp)
+            modifier = Modifier.height(200.dp).size(200.dp)
         )
 
         Spacer(modifier = Modifier.height(16.dp))
